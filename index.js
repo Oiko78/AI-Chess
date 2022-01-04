@@ -1,24 +1,28 @@
-import { botMove } from "./bot.js";
 import { highlight, removeHighlight, inset, removeInset } from "./utility.js";
 
-let board = null;
-const boardId = "board";
 const chess = new Chess();
+const boardId = "board";
+let board = null;
+let player = "white";
+let bot = false;
 
 const onDragStart = (source, piece, position, orientation) => {
-  // if (
-  //   (orientation === "white" && piece.search(/^w/) === -1) ||
-  //   (orientation === "black" && piece.search(/^b/) === -1)
-  // ) {
-  //   return false;
-  // }
+  // prevent to move oponent's pieces.
+  if (bot) {
+    if (
+      (orientation === "white" && piece.search(/^w/) === -1) ||
+      (orientation === "black" && piece.search(/^b/) === -1)
+    )
+      return false;
+  }
 
+  // prevent to move if it is end of game
   if (
     chess.in_checkmate() ||
     chess.insufficient_material() ||
     chess.in_stalemate()
   ) {
-    console.log(chess.in_checkmate() ? `game over` : "draw");
+    alert(chess.in_checkmate() ? `game is over` : "game is draw");
     return false;
   }
 
@@ -27,51 +31,48 @@ const onDragStart = (source, piece, position, orientation) => {
     ...chess.moves({ square: source, verbose: true }).map((move) => move.to),
   ]);
 };
-
 const onDrop = (source, target) => {
   // remove all highlighted moves
   removeHighlight(boardId);
 
+  // try to move
   const move = chess.move({
     from: source,
     to: target,
     promotion: "q",
   });
+
+  // validate move
   if (!move) {
-    // highlight previous move jika ada
+    // if not then return to it previous position
     highlight(chess, boardId, []);
     return "snapback";
   }
 
-  // highlight current move
+  // else highlight new move
   highlight(chess, boardId, [source, target], true);
 
-  // cek status game
+  // check game status
   if (chess.in_checkmate()) {
-    return alert(`game over`);
+    return alert(`${player} wins the game!`);
   } else if (chess.insufficient_material() || chess.in_stalemate()) {
-    return alert(`draw!`);
+    return alert("draw!");
   }
 
-  // bot turns
-  botMove(chess, board, boardId, false);
-  console.log(chess.ascii());
+  // next player or bot turn
+  player = player == "white" ? "black" : "white";
+  if (bot) {
+    botMove(chess, board, boardId, false);
+  }
 };
-
 const onSnapEnd = () => {
-  // update posisi board sekarang
+  // update board position on snap
   board.position(chess.fen());
 };
 
-function onDragMove(newLoc, oldLoc, source, piece, position, orientation) {
-  // custom inset kalo mau dipake
-  removeInset(boardId, [source, oldLoc]);
-  inset(boardId, [newLoc]);
-}
-
-const config = {
+board = ChessBoard(boardId, {
   draggable: true,
-  dropOffBoard: "trash",
+  dropOffBoard: "snapback",
   position: "start",
   orientation: "white",
   showNotation: true,
@@ -83,17 +84,11 @@ const config = {
   snapSpeed: 0,
   trashSpeed: 100,
   onDragStart: onDragStart,
-  onDragMove: onDragMove,
   onDrop: onDrop,
+  onSnapEnd: onSnapEnd,
+  // onDragMove: onDragMove,
   // onMouseoutSquare: onMouseoutSquare,
   // onMouseoverSquare: onMouseoverSquare,
   // onMoveEnd: onMoveEnd,
   // onSnapbackEnd: onSnapbackEnd,
-  onSnapEnd: onSnapEnd,
-};
-
-board = Chessboard(boardId, config);
-
-// window.setTimeout(() => {
-//   botMove(chess, board, boardId, true);
-// }, 1000);
+});
