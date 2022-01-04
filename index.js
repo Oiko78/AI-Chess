@@ -1,10 +1,11 @@
+import { botMove, debug } from "./bot.js";
 import { highlight, removeHighlight, inset, removeInset } from "./utility.js";
 
 const chess = new Chess();
 const boardId = "board";
 let board = null;
 let player = "white";
-let bot = false;
+let bot = true;
 
 const onDragStart = (source, piece, position, orientation) => {
   // prevent to move oponent's pieces.
@@ -54,20 +55,23 @@ const onDrop = (source, target) => {
 
   // check game status
   if (chess.in_checkmate()) {
-    return alert(`${player} wins the game!`);
+    alert(`${player} wins the game!`);
+    return;
   } else if (chess.insufficient_material() || chess.in_stalemate()) {
-    return alert("draw!");
+    alert("draw!");
+    return;
   }
 
   // next player or bot turn
   player = player == "white" ? "black" : "white";
   if (bot) {
-    botMove(chess, board, boardId, false);
+    botMove(chess, board, boardId);
+    player = player == "white" ? "black" : "white";
   }
 };
 const onSnapEnd = () => {
   // update board position on snap
-  board.position(chess.fen());
+  board.position(chess.fen(), false);
 };
 
 board = ChessBoard(boardId, {
@@ -86,9 +90,10 @@ board = ChessBoard(boardId, {
   onDragStart: onDragStart,
   onDrop: onDrop,
   onSnapEnd: onSnapEnd,
-  // onDragMove: onDragMove,
-  // onMouseoutSquare: onMouseoutSquare,
-  // onMouseoverSquare: onMouseoverSquare,
-  // onMoveEnd: onMoveEnd,
-  // onSnapbackEnd: onSnapbackEnd,
 });
+
+// let loop = true;
+// while (loop) {
+//   loop = debug(chess, board, boardId);
+//   board.position(chess.fen());
+// }
