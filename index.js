@@ -1,11 +1,14 @@
-import { botMove, debug } from "./bot.js";
-import { highlight, removeHighlight, inset, removeInset } from "./utility.js";
+import { bot } from "./bot.js";
+import { highlight, removeHighlight } from "./utility.js";
 
-const chess = new Chess();
+// const testPosition = "3k4/5ppp/2q5/3p2r1/8/1Q3P2/P4P1P/3R3K w - - 0 1";
+const testPosition = "";
+const chess = testPosition != "" ? new Chess(testPosition) : new Chess();
+
 const boardId = "board";
 let board = null;
 let player = "white";
-let bot = true;
+let computer = true;
 
 const onDragStart = (source, piece, position, orientation) => {
   // prevent to move oponent's pieces.
@@ -64,8 +67,9 @@ const onDrop = (source, target) => {
 
   // next player or bot turn
   player = player == "white" ? "black" : "white";
-  if (bot) {
-    botMove(chess, board, boardId);
+  if (computer) {
+    bot(chess, board, boardId);
+    // debug(chess, board, boardId);
     player = player == "white" ? "black" : "white";
   }
 };
@@ -77,7 +81,7 @@ const onSnapEnd = () => {
 board = ChessBoard(boardId, {
   draggable: true,
   dropOffBoard: "snapback",
-  position: "start",
+  position: testPosition != "" ? testPosition : "start",
   orientation: "white",
   showNotation: true,
   sparePieces: false,
@@ -92,8 +96,19 @@ board = ChessBoard(boardId, {
   onSnapEnd: onSnapEnd,
 });
 
+console.log(chess.ascii());
+
 // let loop = true;
 // while (loop) {
 //   loop = debug(chess, board, boardId);
 //   board.position(chess.fen());
 // }
+// debug(chess, board, boardId);
+// bot(chess, board, boardId);
+window.addEventListener("keypress", (event) => {
+  if (event.key === "Enter") {
+    for (let i = 0; i <= 3; i++) {
+      console.log("depth", i, countMoves(chess, i));
+    }
+  }
+});
