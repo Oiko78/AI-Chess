@@ -15,7 +15,8 @@ const onDragStart = (source, piece, position, orientation) => {
   if (bot) {
     if (
       (orientation === "white" && piece.search(/^w/) === -1) ||
-      (orientation === "black" && piece.search(/^b/) === -1)
+      (orientation === "black" && piece.search(/^b/) === -1) ||
+      chess.turn() !== orientation[0]
     )
       return false;
   }
@@ -68,7 +69,7 @@ const onDrop = (source, target) => {
   // next player or bot turn
   player = player == "white" ? "black" : "white";
   if (computer) {
-    bot(chess, board, boardId);
+    window.setTimeout(() => bot(chess, board, boardId), 100);
     // debug(chess, board, boardId);
     player = player == "white" ? "black" : "white";
   }
