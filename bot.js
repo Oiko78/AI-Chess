@@ -184,7 +184,7 @@ const minmaxCaptures = (chess, alpha, beta, bestMove) => {
     let [evaluation, tempMove] = minmaxCaptures(chess, -beta, -alpha, bestMove);
     evaluation = -evaluation;
     chess.undo();
-    if (evaluation >= beta) return [beta, tempMove];
+    if (evaluation >= beta) return [beta, move];
     if (evaluation > alpha || !bestMove) {
       alpha = evaluation;
       bestMove = move;
@@ -209,6 +209,7 @@ const minmax = (chess, depth, alpha, beta, bestMove) => {
     if (evaluation > alpha || !bestMove) {
       bestMove = tempMove;
     }
+
     // add current position to cache
     positionEvaluations[fen] = [evaluation, bestMove];
     return [evaluation, bestMove];
@@ -237,7 +238,7 @@ const minmax = (chess, depth, alpha, beta, bestMove) => {
     );
     evaluation = -evaluation;
     chess.undo();
-    if (evaluation >= beta) return [beta, tempMove];
+    if (evaluation >= beta) return [beta, move];
     if (evaluation > alpha || !bestMove) {
       alpha = evaluation;
       bestMove = move;
@@ -278,16 +279,18 @@ export const bot = (chess, board, boardId) => {
   removeHighlight(boardId);
 
   // try to move
-  // let move = searchMove(chess, 2);
   let move = searchMove(chess, 3);
   move = chess.move({
     from: move.from,
     to: move.to,
     promotion: "q",
   });
-  console.log(chess.ascii());
+
   // else highlight new move
   highlight(chess, boardId, [move.from, move.to], true);
+
+  // update board
+  board.position(chess.fen(), false);
 
   // check game status
   if (chess.in_checkmate()) {
@@ -297,9 +300,6 @@ export const bot = (chess, board, boardId) => {
     alert("draw!");
     return false;
   }
-
-  // update board
-  board.position(chess.fen(), false);
 
   return true;
 };
